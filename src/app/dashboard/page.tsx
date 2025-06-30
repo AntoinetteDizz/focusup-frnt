@@ -121,10 +121,13 @@ export default function DashboardPage() {
       
       // Actualizar la tarea que contiene esta subtarea
       setTasks(prev => prev.map(task => {
-        if (task.subtask?.id === subtaskId) {
+        const subtaskIndex = task.subtasks.findIndex(subtask => subtask.id === subtaskId);
+        if (subtaskIndex !== -1) {
+          const updatedSubtasks = [...task.subtasks];
+          updatedSubtasks[subtaskIndex] = updatedSubtask;
           return {
             ...task,
-            subtask: updatedSubtask
+            subtasks: updatedSubtasks
           };
         }
         return task;
@@ -155,24 +158,24 @@ export default function DashboardPage() {
 
   const generateSubtaskWithAI = async () => {
     try {
-      // Crear subtareas usando IA sin asignarlas a ninguna tarea
-      const newSubtasks = await apiService.createSubtaskWithAI({
+      // Obtener sugerencias de subtareas usando IA
+      const suggestions = await apiService.getSubtaskSuggestionsWithAI({
         title: 'Tarea automática',
         description: 'Subtareas generadas automáticamente para uso posterior',
         priority: 'Media'
       });
       
-      if (Array.isArray(newSubtasks) && newSubtasks.length > 0) {
-        alert(`Se generaron ${newSubtasks.length} subtareas exitosamente:\n${newSubtasks.map(s => `• ${s.title}`).join('\n')}`);
+      if (Array.isArray(suggestions) && suggestions.length > 0) {
+        alert(`Se generaron ${suggestions.length} sugerencias de subtareas:\n${suggestions.map(s => `• ${s.title}`).join('\n')}`);
       } else {
-        alert('No se pudieron generar subtareas con IA.');
+        alert('No se pudieron generar sugerencias de subtareas con IA.');
       }
       
       // Recargar las tareas para mostrar las nuevas subtareas disponibles
       await loadTasks();
     } catch (error) {
-      console.error('Error generating subtasks with AI:', error);
-      alert('Error al generar las subtareas con IA. Inténtalo de nuevo.');
+      console.error('Error generating subtask suggestions with AI:', error);
+      alert('Error al generar las sugerencias de subtareas con IA. Inténtalo de nuevo.');
     }
   };
 
